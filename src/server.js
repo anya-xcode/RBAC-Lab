@@ -16,16 +16,40 @@ const users = [
 
 // --- LOGIN ROUTE ---
 app.post("/login", (req, res) => {
-  
+  const { username, password , role} = req.body;
+  const user = users.find((u) => u.username === username && u.password === password && u.role === role);
+  if (!user) {
+    return res.status(401).send("Invalid credentials");
+  } 
+  const token = jwt.sign({ username, role }, JWT_SECRET, { expiresIn: "1h" });
+  res.json({ token });
 });
 
 // --- AUTH MIDDLEWARE ---
 const authenticate = (req, res, next) => {
+  const authHeader = req.headers.authorization;
+  if (!authHeader) {
+    return res.status(401).send({ message: "header is  missing" });
+  }
+  const token = authHeader.split(" ")[1];
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET);
+    req.user = decoded;
+    next();
+  } catch (err) {
+    return res.status(403).send({ message: "Invalid token" });
+
+  }
   
 };
 
+
 // --- ROLE CHECK MIDDLEWARE ---
 const authorize = (allowedRoles) => (req, res, next) => {
+  if (!allowedRoles.includes(req.user.role)) {
+    return res.status(403).send({ message: "Access denied" });
+  }
+  next(); 
   
 };
 

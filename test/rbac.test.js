@@ -3,6 +3,7 @@ const { expect } = require("chai");
 const jwt = require("jsonwebtoken");
 const app = require("../src/server.js");
 
+
 describe("🎓 Newton School RBAC Assignment", () => {
   let adminToken, teacherToken, studentToken;
 
